@@ -3,7 +3,7 @@ from django.contrib.auth import login, authenticate,logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from .models import CustomUser
-from .models import ShopOwnerDetails
+from .models import ShopOwnerDetails, Product,UserProfile
 
 # For All
 def index(request):
@@ -172,7 +172,37 @@ def delete_product(request, product_id):
 
 
 # User Section
+from django.shortcuts import redirect
 @login_required
 def user_dashboard(request):
-    return render(request, 'user_dashboard.html', {'user': request.user})
+    # Check if the user is a regular user, if not, redirect them
+    if request.user.role != "user":
+        return redirect('some_other_page')  # Redirect to another page (like shop owner's dashboard)
 
+    # Initialize profile variable
+    profile = None
+    # Get or create the profile for the user
+    profile, created = UserProfile.objects.get_or_create(user=request.user)
+
+    # Handle form submission for profile update
+    if request.method == "POST":
+        # Update profile for user
+        profile.first_name = request.POST.get('first_name')
+        profile.last_name = request.POST.get('last_name')
+        profile.email = request.POST.get('email')
+        profile.phone_number = request.POST.get('phone_number')
+        profile.address = request.POST.get('address')
+        profile.save()
+
+        # Redirect after saving the profile
+        return redirect('user_dashboard')
+      # Check if the profile is filled (i.e., if any required fields are missing)
+    profile_filled = all([profile.first_name, profile.last_name, profile.phone_number, profile.address])
+
+    # Render the user dashboard with the profile
+    return render(request, 'user_dashboard.html', {'user': request.user, 'profile': profile, 'profile_filled': profile_filled})
+
+
+@login_required
+def booking(request):
+    return render(request,"booking_form.html") 
