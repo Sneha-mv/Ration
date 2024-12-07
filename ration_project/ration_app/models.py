@@ -64,6 +64,17 @@ class UserProfile(models.Model):
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
 
+class Booking(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    products = models.ManyToManyField(Product)
+    address = models.TextField()
+    ration_card_number = models.CharField(max_length=50)
+    ration_card_image = models.ImageField(upload_to='ration_cards/', default='ration_cards/default.jpg')
+    phone_number = models.CharField(max_length=15)
+    booking_date = models.DateField()
+   
 
+    def __str__(self):
+        return f"Booking by {self.user.username} on {self.booking_date}"
 
 

@@ -203,6 +203,59 @@ def user_dashboard(request):
     return render(request, 'user_dashboard.html', {'user': request.user, 'profile': profile, 'profile_filled': profile_filled})
 
 
+from django.shortcuts import render, redirect
+from django.http import JsonResponse
+from .models import Product, Booking
+from django.contrib.auth.decorators import login_required
+from datetime import date
+
 @login_required
 def booking(request):
-    return render(request,"booking_form.html") 
+    if request.method == "POST":
+        # Process the booking form
+        address = request.POST.get("address")
+        phone_number = request.POST.get("phone_number")
+        ration_card_number = request.POST.get("ration_card_number")
+        ration_card_image = request.FILES.get("ration_card_image")
+        product_ids = request.POST.getlist("products")
+        
+        if not product_ids:
+            return render(request, "booking_form.html", {
+                "error": "Please select at least one product.",
+                "categories": dict(CATEGORY_CHOICES),
+                "products": Product.objects.none()
+            })
+        
+        # Create the booking
+        booking = Booking.objects.create(
+            user=request.user,
+            address=address,
+            ration_card_number=ration_card_number,
+            ration_card_image=ration_card_image,
+            phone_number=phone_number,
+            booking_date=date.today()
+        )
+        booking.products.set(product_ids)
+        return redirect("user_dashboard")  # Replace 'success_page' with the name of your success URL
+    
+    # For GET request, show the form
+    categories = dict(CATEGORY_CHOICES)
+    return render(request, "booking_form.html", {
+        "categories": categories,
+        "products": Product.objects.none()  # Initially no products
+    })
+
+
+def filter_products_by_category(request):
+    category = request.GET.get("category")
+    if category:
+        products = Product.objects.filter(category=category, availability=True)
+        data = [{"id": product.id, "name": product.name, "price": str(product.price)} for product in products]
+        return JsonResponse({"products": data})
+    return JsonResponse({"products": []})
+
+
+def booking_details(request):
+    # Fetch all bookings with related product details
+    bookings = Booking.objects.select_related('user').prefetch_related('products').all()
+    return render(request, 'booking_details.html', {'bookings': bookings})

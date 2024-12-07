@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Form</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+</head>
+<body>
+    <h2>Booking Form</h2>
+
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <!-- Name -->
+        <label for="name">Name:</label>
+        <input type="text" name="name" id="name" required><br><br>
+
+        <!-- Address -->
+        <label for="address">Address:</label>
+        <textarea name="address" id="address" required></textarea><br><br>
+
+        <!-- Phone Number -->
+        <label for="phone_number">Phone Number:</label>
+        <input type="tel" name="phone_number" id="phone_number" required><br><br>
+
+        <!-- Ration Card Number -->
+        <label for="ration_card_number">Ration Card Number:</label>
+        <input type="text" name="ration_card_number" id="ration_card_number" required><br><br>
+
+        <!-- Ration Card Image -->
+        <label for="ration_card_image">Ration Card Image:</label>
+        <input type="file" name="ration_card_image" id="ration_card_image" accept="image/*" required><br><br>
+
+        <!-- Category Selection -->
+        <label for="category">Select Category:</label>
+        <select id="category" name="category">
+            <option value="">-- Select Category --</option>
+            {% for key, value in categories.items %}
+                <option value="{{ key }}">{{ value }}</option>
+            {% endfor %}
+        </select><br><br>
+
+        <!-- Product Selection -->
+        <label>Select Products:</label>
+        <div id="product-container">
+            <p>Please select a category to see available products.</p>
+        </div><br>
+
+        <!-- Total Price -->
+        <label for="total_price">Total Price:</label>
+        <input type="text" id="total_price" name="total_price" readonly value="0.00"><br><br>
+
+        <!-- Submit Button -->
+        <button type="submit">Submit Booking</button>
+    </form>
+
+    <script>
+        $(document).ready(function () {
+            // Fetch products based on selected category
+            $("#category").change(function () {
+                var category = $(this).val();
+                $.ajax({
+                    url: "{% url 'filter_products' %}",
+                    data: {category: category},
+                    success: function (response) {
+                        var productContainer = $("#product-container");
+                        productContainer.empty(); // Clear current options
+                        if (response.products.length > 0) {
+                            response.products.forEach(function (product) {
+                                productContainer.append(
+                                    `<label>
+                                        <input type="checkbox" class="product-checkbox" 
+                                               data-price="${product.price}" value="${product.id}" name="products">
+                                        ${product.name} - ₹${product.price}
+                                    </label><br>`
+                                );
+                            });
+                        } else {
+                            productContainer.append(
+                                `<p>No products available in this category.</p>`
+                            );
+                        }
+                        calculateTotalPrice(); // Reset total price
+                    }
+                });
+            });
+
+            // Calculate the total price based on selected products
+            $(document).on("change", ".product-checkbox", function () {
+                calculateTotalPrice();
+            });
+
+            function calculateTotalPrice() {
+                let total = 0;
+                $(".product-checkbox:checked").each(function () {
+                    total += parseFloat($(this).data("price"));
+                });
+                $("#total_price").val(total.toFixed(2));
+            }
+        });
+    </script>
+</body>
+</html>
