@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Add Product</title>
+</head>
+<body>
+    <h2>Add Product</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <label for="name">Product Name:</label>
+        <input type="text" name="name" id="name" required><br><br>
+
+        <label for="category">Category:</label>
+        <select name="category" id="category" required>
+            {% for code, label in CATEGORY_CHOICES %}
+            <option value="{{ code }}">{{ label }}</option>
+            {% endfor %}
+        </select><br><br>
+
+        <label for="quantity">Quantity:</label>
+        <input type="text" name="quantity" id="quantity" min="1" required><br><br>
+
+        <label for="price">Price:</label>
+        <input type="number" name="price" id="price" step="0.01" required><br><br>
+
+        <label for="availability">Available:</label>
+        <input type="checkbox" name="availability" id="availability"><br><br>
+
+        <button type="submit">Add Product</button>
+    </form>
+</body>
+</html>

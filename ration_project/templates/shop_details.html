@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Shop Owner Details</title>
+</head>
+<body>
+    <div>
+        <h2>if you alredy filled the details u can ho to dashboard</h2>
+        <a href="{% url 'shop_dashboard' %}"><button class="btn btn-success">Go To Dashboard</button></a>
+    </div>
+    <h1>Personal Details</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label for="first_name">First Name:</label>
+        <input type="text" name="first_name" id="first_name" required><br>
+
+        <label for="last_name">Last Name:</label>
+        <input type="text" name="last_name" id="last_name" required><br>
+
+        <label for="email">Email:</label>
+        <input type="email" name="email" id="email" required><br>
+
+        <label for="phone_number">Phone Number:</label>
+        <input type="text" name="phone_number" id="phone_number" required><br>
+
+        <label for="aadhar_image">Aadhar Image:</label>
+        <input type="file" name="aadhar_image" id="aadhar_image" required><br>
+
+        <h1>Shop Details</h1>
+        <label for="shop_name">Shop Name:</label>
+        <input type="text" name="shop_name" id="shop_name" required><br>
+
+        <label for="shop_address">Shop Address:</label>
+        <textarea name="shop_address" id="shop_address" required></textarea><br>
+
+        <label for="shop_license_number">Shop License Number:</label>
+        <input type="text" name="shop_license_number" id="shop_license_number" required><br>
+
+        <label for="license_image">License Image:</label>
+        <input type="file" name="license_image" id="license_image" required><br>
+
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>

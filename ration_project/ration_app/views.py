@@ -1,16 +1,14 @@
-from django.shortcuts import render
-
-# Create your views here.
-
-# Admin Section
-def index(request):
-    return render(request,"index.html")
-
 from django.shortcuts import render, redirect
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import login, authenticate,logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from .models import CustomUser
+from .models import ShopOwnerDetails
+
+# For All
+def index(request):
+    return render(request,"index.html")
+
 
 def register(request):
     if request.method == 'POST':
@@ -22,18 +20,16 @@ def register(request):
 
         if password != confirm_password:
             return render(request, 'register.html', {'error': 'Passwords do not match'})
-
         if CustomUser.objects.filter(username=username).exists():
             return render(request, 'register.html', {'error': 'Username already exists'})
-
         if CustomUser.objects.filter(email=email).exists():
             return render(request, 'register.html', {'error': 'Email already exists'})
 
         user = CustomUser.objects.create_user(username=username, email=email, password=password, role=role)
         user.save()
         return redirect('login')
-
     return render(request, 'register.html')
+
 
 def login_view(request):
     if request.method == 'POST':
@@ -46,23 +42,137 @@ def login_view(request):
             if user.is_superuser:
                 return redirect('admin_dashboard')
             elif user.role == 'shop_owner':
-                return redirect('shop_dashboard')
+                return redirect('shop_details')
             else:
                 return redirect('user_dashboard')
         else:
             return render(request, 'login.html', {'error': 'Invalid credentials'})
-
     return render(request, 'login.html')
 
+
+def logout_view(request):
+    logout(request)  
+    return redirect('index')
+
+
+# Admin Section
 @login_required
 def admin_dashboard(request):
     return render(request, 'admin_dashboard.html')
 
+
+# Shop Owner Section
+# @login_required
+# def shop_dashboard(request):
+#     shop_owner_details = ShopOwnerDetails.objects.get(user=request.user)
+#     products = Product.objects.all() 
+#     return render(request, 'shop_dashboard.html', {'user': request.user, 'shop_owner_details': shop_owner_details, 'products': products,})
 @login_required
 def shop_dashboard(request):
-    return render(request, 'shop_dashboard.html')
+    shop_owner_details = ShopOwnerDetails.objects.get(user=request.user)
+    products = Product.objects.all()  # Get all products, you can filter based on other conditions if needed.
+    return render(request, 'shop_dashboard.html', {
+        'user': request.user, 
+        'shop_owner_details': shop_owner_details, 
+        'products': products
+    })
 
 @login_required
+def shop_details(request):
+    if request.method == 'POST':
+        first_name = request.POST['first_name']
+        last_name = request.POST['last_name']
+        email = request.POST['email']
+        phone_number = request.POST['phone_number']
+        aadhar_image = request.FILES['aadhar_image']
+        shop_name = request.POST['shop_name']
+        shop_address = request.POST['shop_address']
+        shop_license_number = request.POST['shop_license_number']
+        license_image = request.FILES['license_image']
+
+        # Save the details
+        ShopOwnerDetails.objects.create(
+            user=request.user,
+            first_name=first_name,
+            last_name=last_name,
+            email=email,
+            phone_number=phone_number,
+            aadhar_image=aadhar_image,
+            shop_name=shop_name,
+            shop_address=shop_address,
+            shop_license_number=shop_license_number,
+            license_image=license_image
+        )
+        return redirect('shop_dashboard')  
+    
+
+    return render(request, 'shop_details.html')
+
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import Product
+from .models import CATEGORY_CHOICES
+
+def add_product(request):
+    if request.method == 'POST':
+        name = request.POST['name']
+        category = request.POST['category']
+        quantity = request.POST['quantity']
+        price = request.POST['price']
+        availability = 'availability' in request.POST
+        
+
+        Product.objects.create(
+            name=name,
+            category=category,
+            quantity=quantity,
+            price=price,
+            availability=availability
+        )
+        return redirect('shop_dashboard')
+     # Pass CATEGORY_CHOICES to the template
+    context = {
+        'CATEGORY_CHOICES': Product._meta.get_field('category').choices,
+    }
+    return render(request, 'add_product.html',context)
+
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Product
+
+def edit_product(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    
+    if request.method == 'POST':  # Update product when the user submits the data
+        # Directly update the product fields
+        product.name = request.POST.get('name', product.name)
+        product.category = request.POST.get('category', product.category)
+        product.quantity = request.POST.get('quantity', product.quantity)
+        product.price = request.POST.get('price', product.price)
+        product.availability = request.POST.get('availability', product.availability)
+        product.save()
+        
+        return redirect('shop_dashboard')  # Redirect to the product list page after update
+    
+    return render(request, 'edit_product.html', {'product': product})
+
+from django.shortcuts import get_object_or_404, redirect
+from .models import Product
+
+def delete_product(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+
+    if request.method == 'POST':  # Confirm deletion via POST
+        product.delete()
+        return redirect('shop_dashboard')  # Redirect to the product list page after deletion
+    
+    return render(request, 'confirm_delete.html', {'product': product})
+
+
+
+
+
+
+# User Section
+@login_required
 def user_dashboard(request):
-    return render(request, 'user_dashboard.html')
+    return render(request, 'user_dashboard.html', {'user': request.user})
 

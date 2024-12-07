@@ -1,0 +1,23 @@
+<h1>Edit Product</h1>
+
+<form method="POST">
+    {% csrf_token %}
+    <label for="name">Name:</label>
+    <input type="text" name="name" value="{{ product.name }}">
+    
+    <label for="category">Category:</label>
+    <input type="text" name="category" value="{{ product.category }}">
+
+    <label for="quantity">Quantity:</label>
+    <input type="text" name="quantity" value="{{ product.quantity }}">
+
+    <label for="price">Price:</label>
+    <input type="text" name="price" value="{{ product.price }}">
+
+    <label for="availability">Availability:</label>
+    <input type="text" name="availability" value="{{ product.availability }}">
+
+    <button type="submit">Save Changes</button>
+</form>
+
+<a href="{% url 'shop_dashboard' %}">Back to product list</a>
