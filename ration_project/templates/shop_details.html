@@ -5,9 +5,25 @@
 </head>
 <body>
     <div>
-        <h2>if you alredy filled the details u can ho to dashboard</h2>
-        <a href="{% url 'shop_dashboard' %}"><button class="btn btn-success">Go To Dashboard</button></a>
+        {% if owner_details %}
+            {% if owner_details.status == 'approved' %}
+                <h2>If you have already filled the details, you can go to the dashboard</h2>
+                <a href="{% url 'shop_dashboard' %}"><button class="btn btn-success">Go To Dashboard</button></a>
+            {% elif owner_details.status == 'rejected' %}
+                <h2>Your details have been rejected. Please contact support for more information.</h2>
+            {% else %}
+                <h2>Your status is {{ owner_details.status }}. Please wait until your details are approved to access the dashboard.</h2>
+            {% endif %}
+        {% else %}
+            <h2>You haven't filled in the details yet. Please complete the form below.</h2>
+        {% endif %}
     </div>
+
+    <!-- Show message if form is submitted and status is pending or rejected -->
+    {% if message %}
+        <p>{{ message }}</p>
+    {% endif %}
+
     <h1>Personal Details</h1>
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}

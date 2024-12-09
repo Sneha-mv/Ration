@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Booking Order Details</title>
+    <title>All Bookings</title>
     <style>
         table {
             width: 100%;
@@ -23,17 +23,21 @@
     </style>
 </head>
 <body>
-    <h2>Booking Order Details</h2>
+    <h2>All Bookings</h2>
     
     <table>
         <thead>
             <tr>
-                <th>Booking Person</th>
+                <th>User</th>
+                <th>Address</th>
+                <th>Ration Card Number</th>
+                <th>Phone Number</th>
                 <th>Product Name</th>
                 <th>Quantity</th>
                 <th>Price (₹)</th>
                 <th>Booked RationShop</th>
                 <th>Booking Date</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -41,11 +45,17 @@
                 {% for product in booking.products.all %}
                 <tr>
                     <td>{{ booking.user.username }}</td>
+                    <td>{{ booking.address }}</td>
+                    <td>{{ booking.ration_card_number }}</td>
+                    <td>{{ booking.phone_number }}</td>
                     <td>{{ product.name }}</td>
                     <td>{{ product.quantity }}</td>
                     <td>{{ product.price }}</td>
                     <td>{{ booking.ration_shop }}</td>
                     <td>{{ booking.booking_date }}</td>
+                    <td>
+                        <a href="{% url 'delete_booking' booking.id %}" class="btn-delete" onclick="return confirm('Are you sure you want to delete this booking?');">Delete</a>
+                    </td>
                 </tr>
                 {% endfor %}
             {% empty %}

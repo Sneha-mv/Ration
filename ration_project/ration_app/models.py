@@ -2,7 +2,6 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings
 
-# Create your models here.
 
 # For all
 class CustomUser(AbstractUser):
@@ -15,7 +14,7 @@ class CustomUser(AbstractUser):
 
 # Shop Owner
 class ShopOwnerDetails(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)  # Use AUTH_USER_MODEL
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)  
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
     email = models.EmailField()
@@ -27,11 +26,11 @@ class ShopOwnerDetails(models.Model):
     shop_license_number = models.CharField(max_length=50)
     license_image = models.ImageField(upload_to='license_images/')
 
+    status = models.CharField(max_length=20, default='pending')
+
     def __str__(self):
         return self.shop_name
     
-    # models.py
-from django.db import models
 
 CATEGORY_CHOICES = [
     ('APL', 'APL'),
@@ -41,6 +40,7 @@ CATEGORY_CHOICES = [
 ]
 
 class Product(models.Model):
+    shop_owner = models.ForeignKey(ShopOwnerDetails, on_delete=models.CASCADE, related_name='products',  null=True, blank=True) 
     name = models.CharField(max_length=100)
     category = models.CharField(max_length=3, choices=CATEGORY_CHOICES)
     quantity = models.CharField(max_length=100)
@@ -51,8 +51,7 @@ class Product(models.Model):
         return self.name
     
 
-
-# User Profile (for regular users)
+# User Section
 class UserProfile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     first_name = models.CharField(max_length=50)
@@ -64,6 +63,7 @@ class UserProfile(models.Model):
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
 
+
 class Booking(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     products = models.ManyToManyField(Product)
@@ -72,8 +72,8 @@ class Booking(models.Model):
     ration_card_image = models.ImageField(upload_to='ration_cards/', default='ration_cards/default.jpg')
     phone_number = models.CharField(max_length=15)
     booking_date = models.DateField()
+    ration_shop = models.ForeignKey(ShopOwnerDetails, on_delete=models.SET_NULL, null=True, blank=True)
    
-
     def __str__(self):
         return f"Booking by {self.user.username} on {self.booking_date}"
 

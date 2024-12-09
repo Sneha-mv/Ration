@@ -1,9 +1,12 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate,logout
-from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from .models import CustomUser
-from .models import ShopOwnerDetails, Product,UserProfile
+from .models import ShopOwnerDetails, Product,UserProfile, Booking
+from django.http import JsonResponse
+from datetime import date
+from django.db.models import Sum
+from .models import CATEGORY_CHOICES
 
 # For All
 def index(request):
@@ -61,25 +64,89 @@ def admin_dashboard(request):
     return render(request, 'admin_dashboard.html')
 
 
+def shop_owner_list(request):
+    shop_owners = ShopOwnerDetails.objects.all()  
+    return render(request, 'shop_owners.html', {'shop_owners': shop_owners})
+
+
+def user_list(request):
+    users = UserProfile.objects.all()  
+    return render(request, 'user_list.html', {'users': users})
+
+
+def product_list(request):
+    products = Product.objects.all()  
+    return render(request, 'product_list.html', {'products': products})
+
+
+def order_list(request):
+    bookings = Booking.objects.all().select_related('user').prefetch_related('products')
+    return render(request, 'order_list.html', {'bookings': bookings})
+
+
+def delete_booking(request, booking_id):
+    booking = get_object_or_404(Booking, id=booking_id)
+    booking.delete()  
+    return redirect('order_list')
+
+
+def delete_user(request, user_id):
+    user = get_object_or_404(UserProfile, id=user_id)  
+    user.user.is_active = False
+    user.user.save()
+    # Optionally, delete the user profile (you can skip this if you want to keep the profile data)
+    user.delete()
+    return redirect('user_list') 
+
+
+def approve_owner(request, owner_id):
+    owner = ShopOwnerDetails.objects.get(id=owner_id)
+    owner.status = 'approved'
+    owner.save()
+    return redirect('shop_owner_list') 
+
+
+def reject_owner(request, owner_id):
+    owner = ShopOwnerDetails.objects.get(id=owner_id)
+    owner.status = 'rejected'
+    owner.save()
+    return redirect('shop_owner_list')  
+
+
 # Shop Owner Section
-# @login_required
-# def shop_dashboard(request):
-#     shop_owner_details = ShopOwnerDetails.objects.get(user=request.user)
-#     products = Product.objects.all() 
-#     return render(request, 'shop_dashboard.html', {'user': request.user, 'shop_owner_details': shop_owner_details, 'products': products,})
 @login_required
 def shop_dashboard(request):
     shop_owner_details = ShopOwnerDetails.objects.get(user=request.user)
-    products = Product.objects.all()  # Get all products, you can filter based on other conditions if needed.
+    products = Product.objects.all()  
+    
     return render(request, 'shop_dashboard.html', {
         'user': request.user, 
         'shop_owner_details': shop_owner_details, 
-        'products': products
-    })
+        'products': products })
+
 
 @login_required
 def shop_details(request):
+    try:
+        owner_details = ShopOwnerDetails.objects.get(user=request.user)
+    except ShopOwnerDetails.DoesNotExist:
+        owner_details = None  # User hasn't filled details yet
+
     if request.method == 'POST':
+        if owner_details:
+            if owner_details.status == 'approved':
+                return redirect('shop_dashboard')
+            elif owner_details.status == 'rejected':
+                return render(request, 'shop_details.html', {
+                    'owner_details': owner_details,
+                    'message': 'Your details have been rejected. Please contact support for more information.'
+                })
+            else:
+                return render(request, 'shop_details.html', {
+                    'owner_details': owner_details,
+                    'message': 'Your status is pending. Please wait until your details are approved.'
+                })
+
         first_name = request.POST['first_name']
         last_name = request.POST['last_name']
         email = request.POST['email']
@@ -90,7 +157,6 @@ def shop_details(request):
         shop_license_number = request.POST['shop_license_number']
         license_image = request.FILES['license_image']
 
-        # Save the details
         ShopOwnerDetails.objects.create(
             user=request.user,
             first_name=first_name,
@@ -103,14 +169,11 @@ def shop_details(request):
             shop_license_number=shop_license_number,
             license_image=license_image
         )
-        return redirect('shop_dashboard')  
-    
+        return render(request, 'shop_details.html', {
+            'message': 'Your details are submitted and pending approval.'
+        })
+    return render(request, 'shop_details.html', {'owner_details': owner_details})
 
-    return render(request, 'shop_details.html')
-
-from django.shortcuts import render, redirect, get_object_or_404
-from .models import Product
-from .models import CATEGORY_CHOICES
 
 def add_product(request):
     if request.method == 'POST':
@@ -120,29 +183,24 @@ def add_product(request):
         price = request.POST['price']
         availability = 'availability' in request.POST
         
-
         Product.objects.create(
             name=name,
             category=category,
             quantity=quantity,
             price=price,
-            availability=availability
-        )
+            availability=availability )
         return redirect('shop_dashboard')
-     # Pass CATEGORY_CHOICES to the template
+    
     context = {
         'CATEGORY_CHOICES': Product._meta.get_field('category').choices,
     }
     return render(request, 'add_product.html',context)
 
-from django.shortcuts import render, get_object_or_404, redirect
-from .models import Product
 
 def edit_product(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     
-    if request.method == 'POST':  # Update product when the user submits the data
-        # Directly update the product fields
+    if request.method == 'POST':  
         product.name = request.POST.get('name', product.name)
         product.category = request.POST.get('category', product.category)
         product.quantity = request.POST.get('quantity', product.quantity)
@@ -150,74 +208,64 @@ def edit_product(request, product_id):
         product.availability = request.POST.get('availability', product.availability)
         product.save()
         
-        return redirect('shop_dashboard')  # Redirect to the product list page after update
-    
+        return redirect('shop_dashboard')  
     return render(request, 'edit_product.html', {'product': product})
 
-from django.shortcuts import get_object_or_404, redirect
-from .models import Product
 
 def delete_product(request, product_id):
     product = get_object_or_404(Product, id=product_id)
-
-    if request.method == 'POST':  # Confirm deletion via POST
+    if request.method == 'POST': 
         product.delete()
-        return redirect('shop_dashboard')  # Redirect to the product list page after deletion
-    
+        return redirect('shop_dashboard')  
     return render(request, 'confirm_delete.html', {'product': product})
 
 
-
-
+def orders_in_shop(request):
+    shop_owner = ShopOwnerDetails.objects.get(user=request.user)
+    bookings = Booking.objects.filter(ration_shop=shop_owner)
+    for booking in bookings:
+        booking.total_price = booking.products.aggregate(Sum('price'))['price__sum'] or 0
+    return render(request, "orders_in_shop.html", {"bookings": bookings})
 
 
 # User Section
-from django.shortcuts import redirect
 @login_required
 def user_dashboard(request):
-    # Check if the user is a regular user, if not, redirect them
     if request.user.role != "user":
-        return redirect('some_other_page')  # Redirect to another page (like shop owner's dashboard)
+        return redirect('index') 
 
-    # Initialize profile variable
     profile = None
-    # Get or create the profile for the user
     profile, created = UserProfile.objects.get_or_create(user=request.user)
 
-    # Handle form submission for profile update
     if request.method == "POST":
-        # Update profile for user
         profile.first_name = request.POST.get('first_name')
         profile.last_name = request.POST.get('last_name')
         profile.email = request.POST.get('email')
         profile.phone_number = request.POST.get('phone_number')
         profile.address = request.POST.get('address')
         profile.save()
-
-        # Redirect after saving the profile
         return redirect('user_dashboard')
-      # Check if the profile is filled (i.e., if any required fields are missing)
     profile_filled = all([profile.first_name, profile.last_name, profile.phone_number, profile.address])
-
-    # Render the user dashboard with the profile
     return render(request, 'user_dashboard.html', {'user': request.user, 'profile': profile, 'profile_filled': profile_filled})
 
-
-from django.shortcuts import render, redirect
-from django.http import JsonResponse
-from .models import Product, Booking
-from django.contrib.auth.decorators import login_required
-from datetime import date
 
 @login_required
 def booking(request):
     if request.method == "POST":
-        # Process the booking form
         address = request.POST.get("address")
         phone_number = request.POST.get("phone_number")
         ration_card_number = request.POST.get("ration_card_number")
         ration_card_image = request.FILES.get("ration_card_image")
         product_ids = request.POST.getlist("products")
+        shop_id = request.POST.get("ration_shop")
+
+        # Validate the selected shop
+        if not shop_id:
+            return render(request, "booking_form.html", {
+                "error": "Please select a ration shop.",
+                "shops": ShopOwnerDetails.objects.all(),
+                "products": Product.objects.none()
+            })
         
         if not product_ids:
             return render(request, "booking_form.html", {
@@ -226,24 +274,26 @@ def booking(request):
                 "products": Product.objects.none()
             })
         
-        # Create the booking
+        # Retrieve the selected ration shop
+        ration_shop = get_object_or_404(ShopOwnerDetails, id=shop_id)
         booking = Booking.objects.create(
             user=request.user,
             address=address,
             ration_card_number=ration_card_number,
             ration_card_image=ration_card_image,
             phone_number=phone_number,
-            booking_date=date.today()
-        )
+            booking_date=date.today(),
+            ration_shop=ration_shop )
+        
         booking.products.set(product_ids)
-        return redirect("user_dashboard")  # Replace 'success_page' with the name of your success URL
+        return redirect("user_dashboard")  
     
-    # For GET request, show the form
     categories = dict(CATEGORY_CHOICES)
+    shops = ShopOwnerDetails.objects.all()
     return render(request, "booking_form.html", {
         "categories": categories,
-        "products": Product.objects.none()  # Initially no products
-    })
+        'shops':shops,
+        "products": Product.objects.none()  })
 
 
 def filter_products_by_category(request):
@@ -255,7 +305,9 @@ def filter_products_by_category(request):
     return JsonResponse({"products": []})
 
 
+@login_required
 def booking_details(request):
-    # Fetch all bookings with related product details
-    bookings = Booking.objects.select_related('user').prefetch_related('products').all()
+    bookings = Booking.objects.filter(user=request.user).select_related('user').prefetch_related('products')
     return render(request, 'booking_details.html', {'bookings': bookings})
+
+

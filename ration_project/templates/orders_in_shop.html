@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopowner Orders</title>
+</head>
+<body>
+    <h2>Orders for {{ request.user.username }}</h2>
+
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% else %}
+        {% if bookings %}
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>User</th>
+                        <th>Address</th>
+                        <th>Phone</th>
+                        <th>Ration Card Number</th>
+                        <th>Products</th>
+                        <th>Total Price</th>
+                        <th>Booking Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for booking in bookings %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ booking.user.username }}</td>
+                            <td>{{ booking.address }}</td>
+                            <td>{{ booking.phone_number }}</td>
+                            <td>{{ booking.ration_card_number }}</td>
+                            <td>
+                                {% for product in booking.products.all %}
+                                    {{ product.name }} (₹{{ product.price }})<br>
+                                {% endfor %}
+                            </td>
+                            <td>₹{{ booking.total_price }}</td>
+                            <td>{{ booking.booking_date }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No bookings found for your ration shop.</p>
+        {% endif %}
+    {% endif %}
+</body>
+</html>

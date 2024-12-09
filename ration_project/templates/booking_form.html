@@ -36,6 +36,15 @@
         <label for="ration_card_image">Ration Card Image:</label>
         <input type="file" name="ration_card_image" id="ration_card_image" accept="image/*" required><br><br>
 
+        <!-- Ration Shop Selection -->
+        <label>Select Ration Shop:</label><br>
+        {% for shop in shops %}
+            <label>
+                <input type="radio" name="ration_shop" value="{{ shop.id }}" required>
+                {{ shop.shop_name }} - {{ shop.shop_address }}
+            </label><br>
+        {% endfor %}
+
         <!-- Category Selection -->
         <label for="category">Select Category:</label>
         <select id="category" name="category">
