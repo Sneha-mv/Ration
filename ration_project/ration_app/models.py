@@ -40,7 +40,7 @@ CATEGORY_CHOICES = [
 ]
 
 class Product(models.Model):
-    shop_owner = models.ForeignKey(ShopOwnerDetails, on_delete=models.CASCADE, related_name='products',  null=True, blank=True) 
+    shop_owner = models.ForeignKey(ShopOwnerDetails, on_delete=models.CASCADE, default=1)
     name = models.CharField(max_length=100)
     category = models.CharField(max_length=3, choices=CATEGORY_CHOICES)
     quantity = models.CharField(max_length=100)

@@ -70,33 +70,37 @@
 
     <script>
         $(document).ready(function () {
-            // Fetch products based on selected category
-            $("#category").change(function () {
-                var category = $(this).val();
-                $.ajax({
-                    url: "{% url 'filter_products' %}",
-                    data: {category: category},
-                    success: function (response) {
-                        var productContainer = $("#product-container");
-                        productContainer.empty(); // Clear current options
-                        if (response.products.length > 0) {
-                            response.products.forEach(function (product) {
+            // Fetch products based on selected category and shop
+            $("#category, input[name='ration_shop']").change(function () {
+                var category = $("#category").val();
+                var shop_id = $("input[name='ration_shop']:checked").val();  // Get the selected shop ID
+                
+                if (category && shop_id) {
+                    $.ajax({
+                        url: "{% url 'filter_products' %}",
+                        data: {category: category, shop_id: shop_id},
+                        success: function (response) {
+                            var productContainer = $("#product-container");
+                            productContainer.empty(); // Clear current options
+                            if (response.products.length > 0) {
+                                response.products.forEach(function (product) {
+                                    productContainer.append(
+                                        `<label>
+                                            <input type="checkbox" class="product-checkbox" 
+                                                   data-price="${product.price}" value="${product.id}" name="products">
+                                            ${product.name} - ₹${product.price}
+                                        </label><br>`
+                                    );
+                                });
+                            } else {
                                 productContainer.append(
-                                    `<label>
-                                        <input type="checkbox" class="product-checkbox" 
-                                               data-price="${product.price}" value="${product.id}" name="products">
-                                        ${product.name} - ₹${product.price}
-                                    </label><br>`
+                                    `<p>No products available in this category for the selected shop.</p>`
                                 );
-                            });
-                        } else {
-                            productContainer.append(
-                                `<p>No products available in this category.</p>`
-                            );
+                            }
+                            calculateTotalPrice(); // Reset total price
                         }
-                        calculateTotalPrice(); // Reset total price
-                    }
-                });
+                    });
+                }
             });
 
             // Calculate the total price based on selected products

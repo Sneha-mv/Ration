@@ -117,7 +117,7 @@ def reject_owner(request, owner_id):
 @login_required
 def shop_dashboard(request):
     shop_owner_details = ShopOwnerDetails.objects.get(user=request.user)
-    products = Product.objects.all()  
+    products = Product.objects.filter(shop_owner=shop_owner_details)  
     
     return render(request, 'shop_dashboard.html', {
         'user': request.user, 
@@ -175,22 +175,29 @@ def shop_details(request):
     return render(request, 'shop_details.html', {'owner_details': owner_details})
 
 
+@login_required
 def add_product(request):
+    try:
+        shop_owner = ShopOwnerDetails.objects.get(user=request.user)
+    except ShopOwnerDetails.DoesNotExist:
+        return redirect('index')  
     if request.method == 'POST':
-        name = request.POST['name']
-        category = request.POST['category']
-        quantity = request.POST['quantity']
-        price = request.POST['price']
-        availability = 'availability' in request.POST
-        
-        Product.objects.create(
+        name = request.POST.get('name')
+        category = request.POST.get('category')
+        quantity = request.POST.get('quantity')
+        price = request.POST.get('price')
+        availability = request.POST.get('availability') == 'on' 
+
+        product = Product(
+            shop_owner=shop_owner,
             name=name,
             category=category,
             quantity=quantity,
             price=price,
-            availability=availability )
+            availability=availability
+        )
+        product.save()
         return redirect('shop_dashboard')
-    
     context = {
         'CATEGORY_CHOICES': Product._meta.get_field('category').choices,
     }
@@ -259,7 +266,6 @@ def booking(request):
         product_ids = request.POST.getlist("products")
         shop_id = request.POST.get("ration_shop")
 
-        # Validate the selected shop
         if not shop_id:
             return render(request, "booking_form.html", {
                 "error": "Please select a ration shop.",
@@ -274,7 +280,6 @@ def booking(request):
                 "products": Product.objects.none()
             })
         
-        # Retrieve the selected ration shop
         ration_shop = get_object_or_404(ShopOwnerDetails, id=shop_id)
         booking = Booking.objects.create(
             user=request.user,
@@ -293,13 +298,15 @@ def booking(request):
     return render(request, "booking_form.html", {
         "categories": categories,
         'shops':shops,
-        "products": Product.objects.none()  })
+        "products": Product.objects.none()
+    })
 
 
 def filter_products_by_category(request):
     category = request.GET.get("category")
-    if category:
-        products = Product.objects.filter(category=category, availability=True)
+    shop_id = request.GET.get("shop_id")  
+    if category and shop_id:
+        products = Product.objects.filter(category=category, availability=True, shop_owner_id=shop_id)
         data = [{"id": product.id, "name": product.name, "price": str(product.price)} for product in products]
         return JsonResponse({"products": data})
     return JsonResponse({"products": []})
