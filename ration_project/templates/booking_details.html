@@ -20,6 +20,16 @@
         tr:hover {
             background-color: #f9f9f9;
         }
+        .dashboard-btn {
+            background-color: #4A4A4A;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 20px;
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
@@ -55,5 +65,8 @@
             {% endfor %}
         </tbody>
     </table>
+<a href="{% url 'user_dashboard' %}" class="dashboard-btn">Go to Dashboard</a>
 </body>
 </html>
+
+

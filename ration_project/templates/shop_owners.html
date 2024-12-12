@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shop Owners</title>
+    <title>Shop Owners List</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         body {
@@ -53,6 +53,16 @@
             background-color: #FF5733;
             color: white;
         }
+        .dashboard-btn {
+            background-color: #4A4A4A;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 20px;
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
@@ -71,7 +81,7 @@
                     <th>License Number</th>
                     <th>Aadhar</th>
                     <th>License</th>
-                    <th>Status</th> <!-- New column for Status -->
+                    <th>Status</th> 
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -88,14 +98,12 @@
                     <td>{{ owner.shop_license_number }}</td>
                     <td><img src="{{ owner.aadhar_image.url }}" alt="Aadhar" width="50"></td>
                     <td><img src="{{ owner.license_image.url }}" alt="License" width="50"></td>
-                    <td>{{ owner.status }}</td> <!-- Display the status -->
+                    <td>{{ owner.status }}</td>
                     <td>
                         <div class="actions">
-                            <!-- Approve Button -->
                             <a href="{% url 'approve_owner' owner.id %}">
                                 <button class="btn approve-btn">Approve</button>
                             </a>
-                            <!-- Reject Button -->
                             <a href="{% url 'reject_owner' owner.id %}">
                                 <button class="btn reject-btn">Reject</button>
                             </a>
@@ -109,6 +117,9 @@
                 {% endfor %}
             </tbody>
         </table>
+         <a href="{% url 'admin_dashboard' %}" class="dashboard-btn">Go to Dashboard</a>
     </div>
 </body>
 </html>
+
+

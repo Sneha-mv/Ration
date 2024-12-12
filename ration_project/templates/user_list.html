@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Users</title>
+    <title>Users List</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         body {
@@ -53,6 +53,16 @@
             background-color: #FF5733;
             color: white;
         }
+        .dashboard-btn {
+            background-color: #4A4A4A;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 20px;
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
@@ -94,6 +104,9 @@
                 {% endfor %}
             </tbody>
         </table>
+        <a href="{% url 'admin_dashboard' %}" class="dashboard-btn">Go to Dashboard</a>
     </div>
 </body>
 </html>
+
+

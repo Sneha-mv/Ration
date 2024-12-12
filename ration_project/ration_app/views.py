@@ -6,11 +6,16 @@ from .models import ShopOwnerDetails, Product,UserProfile, Booking
 from django.http import JsonResponse
 from datetime import date
 from django.db.models import Sum
+from django.utils.timezone import now
 from .models import CATEGORY_CHOICES
 
 # For All
 def index(request):
     return render(request,"index.html")
+
+
+def about(request):
+    return render(request,"about_us.html")
 
 
 def register(request):
@@ -269,7 +274,7 @@ def booking(request):
         if not shop_id:
             return render(request, "booking_form.html", {
                 "error": "Please select a ration shop.",
-                "shops": ShopOwnerDetails.objects.all(),
+                "shops": ShopOwnerDetails.objects.filter(status="approved"), 
                 "products": Product.objects.none()
             })
         
@@ -278,6 +283,24 @@ def booking(request):
                 "error": "Please select at least one product.",
                 "categories": dict(CATEGORY_CHOICES),
                 "products": Product.objects.none()
+            })
+
+        current_month = now().month
+        current_year = now().year
+
+        previous_bookings = Booking.objects.filter(
+            user=request.user,
+            booking_date__month=current_month,
+            booking_date__year=current_year,
+            products__id__in=product_ids
+        ).distinct()
+
+        if previous_bookings.exists():
+            return render(request, "booking_form.html", {
+                "error": "You have already booked some of these products this month. Please try again next month.",
+                "categories": dict(CATEGORY_CHOICES),
+                "shops": ShopOwnerDetails.objects.filter(status="approved"),
+                "products": Product.objects.filter(shop_owner_id=shop_id, availability=True),
             })
         
         ration_shop = get_object_or_404(ShopOwnerDetails, id=shop_id)
@@ -294,7 +317,7 @@ def booking(request):
         return redirect("user_dashboard")  
     
     categories = dict(CATEGORY_CHOICES)
-    shops = ShopOwnerDetails.objects.all()
+    shops = ShopOwnerDetails.objects.filter(status="approved")
     return render(request, "booking_form.html", {
         "categories": categories,
         'shops':shops,

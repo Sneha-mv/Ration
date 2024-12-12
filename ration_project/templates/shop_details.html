@@ -1,61 +1,205 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>Shop Owner Details</title>
-</head>
-<body>
-    <div>
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+    Shop Owner Details
+{% endblock %}
+{% block content %}
+    <div class="form-container">
         {% if owner_details %}
-            {% if owner_details.status == 'approved' %}
-                <h2>If you have already filled the details, you can go to the dashboard</h2>
-                <a href="{% url 'shop_dashboard' %}"><button class="btn btn-success">Go To Dashboard</button></a>
-            {% elif owner_details.status == 'rejected' %}
-                <h2>Your details have been rejected. Please contact support for more information.</h2>
-            {% else %}
-                <h2>Your status is {{ owner_details.status }}. Please wait until your details are approved to access the dashboard.</h2>
-            {% endif %}
+            <div class="status-message">
+                {% if owner_details.status == 'approved' %}
+                    <h2>Your details are approved! You can go to the dashboard.</h2>
+                    <a href="{% url 'shop_dashboard' %}" class="btn btn-success" style="margin-left: 250px;margin-top: 10px;">Go To Dashboard</a>
+                {% elif owner_details.status == 'rejected' %}
+                    <h2>Your details have been rejected. Please contact support for more information.</h2>
+                {% else %}
+                    <h2>Your status is {{ owner_details.status }}. Please wait until your details are approved to access the dashboard.</h2>
+                {% endif %}
+            </div>
         {% else %}
             <h2>You haven't filled in the details yet. Please complete the form below.</h2>
         {% endif %}
+
+        {% if message %}
+            <div class="alert-message">
+                <p>{{ message }}</p>
+            </div>
+        {% endif %}
+
+        <h1>Personal Details</h1>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="first_name">First Name</label>
+                <input type="text" name="first_name" id="first_name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="last_name">Last Name</label>
+                <input type="text" name="last_name" id="last_name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" name="email" id="email" required>
+            </div>
+
+            <div class="form-group">
+                <label for="phone_number">Phone Number</label>
+                <input type="text" name="phone_number" id="phone_number" required>
+            </div>
+
+            <div class="form-group">
+                <label for="aadhar_image">Aadhar Image</label>
+                <input type="file" name="aadhar_image" id="aadhar_image" required>
+            </div>
+
+            <h1>Shop Details</h1>
+            <div class="form-group">
+                <label for="shop_name">Shop Name</label>
+                <input type="text" name="shop_name" id="shop_name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="shop_address">Shop Address</label>
+                <textarea name="shop_address" id="shop_address" required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="shop_license_number">Shop License Number</label>
+                <input type="text" name="shop_license_number" id="shop_license_number" required>
+            </div>
+
+            <div class="form-group">
+                <label for="license_image">License Image</label>
+                <input type="file" name="license_image" id="license_image" required>
+            </div>
+
+            <button type="submit" class="submit-btn">Submit</button>
+        </form>
     </div>
+<style>
+.form-container {
+    max-width: 900px;
+    margin-left: 400px;
+    margin-top: 30px;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
+}
 
-    <!-- Show message if form is submitted and status is pending or rejected -->
-    {% if message %}
-        <p>{{ message }}</p>
-    {% endif %}
+h1, h2 {
+    text-align: center;
+    color: #333;
+    font-size: 24px;
+    margin-bottom: 15px;
+}
 
-    <h1>Personal Details</h1>
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        <label for="first_name">First Name:</label>
-        <input type="text" name="first_name" id="first_name" required><br>
+h2 {
+    font-size: 18px;
+}
 
-        <label for="last_name">Last Name:</label>
-        <input type="text" name="last_name" id="last_name" required><br>
+/* Status Messages */
+.status-message h2 {
+    color: #28a745;
+}
 
-        <label for="email">Email:</label>
-        <input type="email" name="email" id="email" required><br>
+.alert-message {
+    background-color: #ff9800;
+    color: #fff;
+    padding: 1px;
+    border-radius: 5px;
+    margin-bottom: 30px;
+}
 
-        <label for="phone_number">Phone Number:</label>
-        <input type="text" name="phone_number" id="phone_number" required><br>
+/* Form Group Styling */
+.form-group {
+    margin-bottom: 20px;
+}
 
-        <label for="aadhar_image">Aadhar Image:</label>
-        <input type="file" name="aadhar_image" id="aadhar_image" required><br>
+label {
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 8px;
+    display: block;
+}
 
-        <h1>Shop Details</h1>
-        <label for="shop_name">Shop Name:</label>
-        <input type="text" name="shop_name" id="shop_name" required><br>
+input[type="text"], input[type="email"], textarea, input[type="file"] {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+    margin-top: 8px;
+}
 
-        <label for="shop_address">Shop Address:</label>
-        <textarea name="shop_address" id="shop_address" required></textarea><br>
+textarea {
+    resize: vertical;
+    height: 120px;
+}
 
-        <label for="shop_license_number">Shop License Number:</label>
-        <input type="text" name="shop_license_number" id="shop_license_number" required><br>
+/* Button Styling */
+button.submit-btn {
+    background-color: #28a745;
+    color: #fff;
+    padding: 12px 30px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    width: 100%;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
 
-        <label for="license_image">License Image:</label>
-        <input type="file" name="license_image" id="license_image" required><br>
+button.submit-btn:hover {
+    background-color: #218838;
+}
 
-        <button type="submit">Submit</button>
-    </form>
-</body>
-</html>
+/* Input Focus Style */
+input[type="text"]:focus, input[type="email"]:focus, textarea:focus, input[type="file"]:focus {
+    border-color: #5A2D96;
+    outline: none;
+}
+
+/* Links */
+a.btn {
+    background-color: #007bff;
+    color: #fff;
+    padding: 10px 20px;
+    font-size: 16px;
+    text-decoration: none;
+    border-radius: 5px;
+    display: inline-block;
+    margin-top: 20px;
+    transition: background-color 0.3s ease;
+}
+
+a.btn:hover {
+    background-color: #0056b3;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .form-container {
+        padding: 15px;
+    }
+
+    h1 {
+        font-size: 22px;
+    }
+
+    h2 {
+        font-size: 16px;
+    }
+
+    button.submit-btn {
+        padding: 10px;
+    }
+}
+
+</style>
+{% endblock %}
+
+
