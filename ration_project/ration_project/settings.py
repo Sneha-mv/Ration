@@ -131,3 +131,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'ration_app.CustomUser'
 
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = 'PvjOeaEQA5b2gH4XHxEGEhMB'
+
+

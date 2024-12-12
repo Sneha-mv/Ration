@@ -18,6 +18,7 @@ urlpatterns = [
     path('delete_booking/<int:booking_id>/', views.delete_booking, name='delete_booking'),
     path('approve/<int:owner_id>/', views.approve_owner, name='approve_owner'),
     path('reject/<int:owner_id>/', views.reject_owner, name='reject_owner'),
+    path('payments-list/', views.payment_list, name='payment_list'),
 
     # Shop Owner Section
     path('shop_dashboard/', views.shop_dashboard, name='shop_dashboard'),
@@ -32,6 +33,9 @@ urlpatterns = [
     path('booking/',views.booking, name='booking'),
     path('filter-products/', views.filter_products_by_category, name='filter_products'),
     path('booking-details/', views.booking_details, name='booking_details'),
+    path('payment-details/',views.payment_details,name='payment_details'),
+    path('payment-success/',views.payment_success,name='payment_success'),
+   
 ]
 
 

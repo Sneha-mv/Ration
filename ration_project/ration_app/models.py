@@ -2,7 +2,6 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings
 
-
 # For all
 class CustomUser(AbstractUser):
     ROLE_CHOICES = [
@@ -73,7 +72,8 @@ class Booking(models.Model):
     phone_number = models.CharField(max_length=15)
     booking_date = models.DateField()
     ration_shop = models.ForeignKey(ShopOwnerDetails, on_delete=models.SET_NULL, null=True, blank=True)
-   
+    payment_status = models.BooleanField(default=False) 
+
     def __str__(self):
         return f"Booking by {self.user.username} on {self.booking_date}"
 

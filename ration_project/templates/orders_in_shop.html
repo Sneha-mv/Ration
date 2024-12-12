@@ -101,6 +101,7 @@
                             <th>Products</th>
                             <th>Total Price</th>
                             <th>Booking Date</th>
+                            <th>Status</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -118,6 +119,7 @@
                                 </td>
                                 <td>₹{{ booking.total_price }}</td>
                                 <td>{{ booking.booking_date }}</td>
+                                <td>{{ booking.payment_status|yesno:"Paid,Pending" }}</td>
                             </tr>
                         {% endfor %}
                     </tbody>

@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %} 
+    QuickRation Payment  
+{% endblock %}
+{% block content %}
+
+<div class="shadow card text-center" style="width: 650px; height:550px;margin-left: 450px;margin-bottom: 50px;background-color: #e8edfd; margin-top: 60px;">
+    {% if message %}
+    <h2 class="pay-message">{{ message }}</h2>
+    <a href="{% url 'user_dashboard' %}" class="dashboard-btn">Go to Dashboard</a>
+
+    {% else %}
+    <h2 class="pay-message">Payment Details</h2>
+    <form action="" method="POST" >
+        {% csrf_token %}
+        {% for booking in bookings %}
+        <div class="card-body pay-sec1">
+            <h5 class="card-title">Name : <b>{{ booking.user.username }}</b></h5>
+            <h5 class="card-title">Products : <b> {% for product in booking.products.all %}
+                {{ product.name }} (₹{{ product.price }})<br>
+            {% endfor %}</b></h5>
+            <h5 class="card-title">Minimum Service Charge: <b>Rs. 100/-</b></h5>
+            <h5 class="card-title">Total Amount: <b>Rs. {{ total_amount }}</b></h5>
+        </div>
+        {% endfor %}
+        <script src="https://checkout.razorpay.com/v1/checkout.js" data-key="rzp_test_JAeLcxoJpwFjEq"
+        data-amount="{{ amount|floatformat:0 }}00" data-currency="INR" data-order_id="{{payment.id}}" data-buttontext="Make Your Payment"
+        data-name="Professional Cipher" data-description="Django and Data Science"
+        data-image="https://example.com/your_logo.jpg" data-prefill.name="PC" data-prefill.email="pc@studygyaan.com"
+        data-theme.color="#F37254"></script>
+    </form>
+    
+  
+    {% endif %}
+
+<style>
+    .razorpay-payment-button {
+        background-color: #1a8f2c;
+        color: white;
+        font-size: 18px;
+        border: none;
+        border-radius: 8px;
+        padding: 12px 24px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        margin-top: 10px;
+}
+ 
+
+.pay-sec1 {
+    padding-top: 50px;
+    padding-left: 130px;
+    text-align: left;
+}
+.pay-message {
+    font-size: 25px;
+    font-family: 'Times New Roman', Times, serif;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+.dashboard-btn {
+            background-color: #322160;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 40px;
+            font-size: 16px;
+            width: 200px;
+            margin-left: 220px;
+        }
+</style>
+</div>
+{% endblock %}
+
+

@@ -7,6 +7,8 @@ from django.http import JsonResponse
 from datetime import date
 from django.db.models import Sum
 from django.utils.timezone import now
+from django.views.decorators.csrf import csrf_exempt
+import razorpay
 from .models import CATEGORY_CHOICES
 
 # For All
@@ -116,6 +118,14 @@ def reject_owner(request, owner_id):
     owner.status = 'rejected'
     owner.save()
     return redirect('shop_owner_list')  
+
+
+@login_required
+def payment_list(request):
+    payments = Booking.objects.select_related('user').values(
+        'user__username', 
+        'payment_status' )
+    return render(request, "admin_payments.html", {"payments": payments})
 
 
 # Shop Owner Section
@@ -339,5 +349,66 @@ def filter_products_by_category(request):
 def booking_details(request):
     bookings = Booking.objects.filter(user=request.user).select_related('user').prefetch_related('products')
     return render(request, 'booking_details.html', {'bookings': bookings})
+
+
+@login_required
+def payment_details(request):
+    # Fetch all unpaid bookings for the current user
+    bookings = Booking.objects.filter(user=request.user, payment_status=False).select_related('user').prefetch_related('products')
+    
+    if not bookings.exists():
+        # If no unpaid bookings, show a message
+        return render(request, "payment_details.html", {"message": "You have already paid for all your bookings."})
+    
+    # Calculate the total price for unpaid bookings
+    total_amount = sum(
+        (booking.products.aggregate(Sum('price'))['price__sum'] or 0) + 100  # Add service charge of 100
+        for booking in bookings
+    )
+    
+    # Convert total amount to paise for Razorpay
+    amount_in_paise = int(total_amount * 100)
+
+    # Create Razorpay order with the calculated amount
+    client = razorpay.Client(auth=("rzp_test_JAeLcxoJpwFjEq", "PvjOeaEQA5b2gH4XHxEGEhMB"))
+    payment = client.order.create({
+        'amount': amount_in_paise,  # Amount in paise
+        'currency': 'INR',
+        'payment_capture': '1'
+    })
+
+    if request.method == 'POST':
+        # Simulate payment success
+        # Update payment status for all unpaid bookings
+        bookings.update(payment_status=True)
+
+        # Redirect to a success page
+        return redirect('payment_success')
+    
+    # Pass payment and booking details to the template
+    return render(request, "payment_details.html", {
+        "bookings": bookings,
+        "payment": payment,
+        "total_amount": total_amount
+    })
+
+
+
+
+
+
+ 
+
+
+@csrf_exempt
+def payment_success(request):
+    if request.method == "POST":
+        # Retrieve booking or payment ID (passed as part of payment success data)
+        booking_id = request.POST.get("booking_id")
+        booking = get_object_or_404(Booking, id=booking_id)
+        booking.payment_status = True
+        booking.save()
+        return render(request, "payment_success.html", {"message": "Payment completed successfully!"})
+    return redirect("user_dashboard")
 
 
