@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}
+    Apply for New Ration Card
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center">Apply for New Ration Card</h2>
+    <form method="POST" enctype="multipart/form-data" class="mt-4">
+        {% csrf_token %}
+        
+        <div class="mb-3">
+            <label for="master_of_the_house" class="form-label">Master of the House:</label>
+            <input type="text" class="form-control" name="master_of_the_house" id="master_of_the_house" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="address" class="form-label">Address:</label>
+            <textarea class="form-control" name="address" id="address" rows="3" required></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label for="phone_number" class="form-label">Phone Number:</label>
+            <input type="text" class="form-control" name="phone_number" id="phone_number" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="punchayath_or_corporation" class="form-label">Panchayat or Corporation:</label>
+            <input type="text" class="form-control" name="punchayath_or_corporation" id="punchayath_or_corporation" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="ward_number" class="form-label">Ward Number:</label>
+            <input type="text" class="form-control" name="ward_number" id="ward_number" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="house_number" class="form-label">House Number:</label>
+            <input type="text" class="form-control" name="house_number" id="house_number" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="monthly_income" class="form-label">Monthly Income:</label>
+            <input type="number" class="form-control" name="monthly_income" id="monthly_income" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="total_family_members" class="form-label">Total Number of Family Members:</label>
+            <input type="number" class="form-control" name="total_family_members" id="total_family_members" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="family_details" class="form-label">Family Members (Names, Jobs, and Monthly Income):</label>
+            <textarea class="form-control" name="family_details" id="family_details" rows="3" required></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label for="id_proofs" class="form-label">ID Proofs of Family Members:</label>
+            <input type="file" class="form-control" name="id_proofs" id="id_proofs" multiple required>
+        </div>
+
+        <div class="mb-3">
+            <label for="date" class="form-label">Date:</label>
+            <input type="date" class="form-control" name="date" id="date" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100">Submit</button>
+    </form>
+</div>
+{% endblock %}
+
+

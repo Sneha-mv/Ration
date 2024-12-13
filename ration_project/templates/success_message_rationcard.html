@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}
+    Application Submitted
+{% endblock %}
+{% block content %}
+<div class="container mt-5 text-center">
+    <div class="card shadow-lg p-4 mb-4" style="background-color: #f8f9fa; border-radius: 10px;margin-left: 380px;margin-top: 80px;">
+        <h2 class="display-4 text-head" style="color: #28a745 !important; font-size: 30px;margin-top: 25px;">Application Submitted Successfully!</h2>
+        <p class="lead" style="margin-top:15px">We have received your application for the ration card.</p>
+        <p><strong>Next Steps:</strong></p>
+        <ul class="list-group list-group-flush mb-3">
+            <li class="list-group-item">Your application will be verified by our team.</li>
+            <li class="list-group-item">Once approved, your ration card will be sent via the post office.</li>
+        </ul>
+        <p class="text-muted">Thank you for applying!</p>
+        <a href="/" class="btn btn-success btn-lg mt-3" style="width: 220px;margin-left: 215px;font-size: 18px;">Go to Homepage</a>
+        <br><br>
+    </div>
+</div>
+{% endblock %}
+
+

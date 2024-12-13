@@ -78,3 +78,30 @@ class Booking(models.Model):
         return f"Booking by {self.user.username} on {self.booking_date}"
 
 
+class RationCardApplications(models.Model):
+    master_of_the_house = models.CharField(max_length=255)
+    address = models.TextField()
+    phone_number = models.CharField(max_length=15)
+    punchayath_or_corporation = models.CharField(max_length=255)
+    ward_number = models.CharField(max_length=10)
+    house_number = models.CharField(max_length=10)
+    monthly_income = models.DecimalField(max_digits=10, decimal_places=2)
+    total_family_members = models.IntegerField()
+    family_details = models.TextField()
+    date = models.DateField()
+    status = models.CharField(max_length=20, choices=[('Pending', 'Pending'), ('Approved', 'Approved'), ('Rejected', 'Rejected')], default='Pending')
+
+    def __str__(self):
+        return self.master_of_the_house
+
+
+class IDProofs(models.Model):
+    application = models.ForeignKey(
+        RationCardApplications, on_delete=models.CASCADE, related_name="id_proofs"
+    )
+    file = models.FileField(upload_to="id_proofs/")
+
+    def __str__(self):
+        return f"ID Proof for {self.application.master_of_the_house}"
+
+

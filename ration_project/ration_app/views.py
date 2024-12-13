@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate,logout
 from django.contrib.auth.decorators import login_required
 from .models import CustomUser
-from .models import ShopOwnerDetails, Product,UserProfile, Booking
+from .models import ShopOwnerDetails, Product,UserProfile, Booking, RationCardApplications, IDProofs
 from django.http import JsonResponse
 from datetime import date
 from django.db.models import Sum
@@ -126,6 +126,30 @@ def payment_list(request):
         'user__username', 
         'payment_status' )
     return render(request, "admin_payments.html", {"payments": payments})
+
+
+def view_ration_cards(request):
+    applications = RationCardApplications.objects.all()
+    return render(request, 'view_ration_cards.html', {'applications': applications})
+
+
+def manage_ration_card(request, id):
+    application = get_object_or_404(RationCardApplications, id=id)
+    if request.method == "POST":
+        action = request.POST.get('action')
+        if action == 'approve':
+            application.status = 'Approved'  
+        elif action == 'reject':
+            application.status = 'Rejected'
+        application.save()
+        return redirect('view_ration_cards')
+    return render(request, 'manage_ration_card.html', {'application': application})
+
+
+def delete_ration_card(request, id):
+    application = get_object_or_404(RationCardApplications, id=id)
+    application.delete()
+    return redirect('view_ration_cards')
 
 
 # Shop Owner Section
@@ -353,62 +377,74 @@ def booking_details(request):
 
 @login_required
 def payment_details(request):
-    # Fetch all unpaid bookings for the current user
     bookings = Booking.objects.filter(user=request.user, payment_status=False).select_related('user').prefetch_related('products')
     
     if not bookings.exists():
-        # If no unpaid bookings, show a message
-        return render(request, "payment_details.html", {"message": "You have already paid for all your bookings."})
-    
-    # Calculate the total price for unpaid bookings
+        return render(request, "payment_details.html", {"message": "You don't have any orders or bookings to proceed payment."})
     total_amount = sum(
         (booking.products.aggregate(Sum('price'))['price__sum'] or 0) + 100  # Add service charge of 100
         for booking in bookings
     )
-    
-    # Convert total amount to paise for Razorpay
     amount_in_paise = int(total_amount * 100)
 
     # Create Razorpay order with the calculated amount
     client = razorpay.Client(auth=("rzp_test_JAeLcxoJpwFjEq", "PvjOeaEQA5b2gH4XHxEGEhMB"))
     payment = client.order.create({
-        'amount': amount_in_paise,  # Amount in paise
+        'amount': amount_in_paise, 
         'currency': 'INR',
         'payment_capture': '1'
     })
 
     if request.method == 'POST':
-        # Simulate payment success
-        # Update payment status for all unpaid bookings
         bookings.update(payment_status=True)
-
-        # Redirect to a success page
         return redirect('payment_success')
     
-    # Pass payment and booking details to the template
     return render(request, "payment_details.html", {
         "bookings": bookings,
         "payment": payment,
-        "total_amount": total_amount
-    })
-
-
-
-
-
-
- 
+        "total_amount": total_amount })
 
 
 @csrf_exempt
 def payment_success(request):
     if request.method == "POST":
-        # Retrieve booking or payment ID (passed as part of payment success data)
         booking_id = request.POST.get("booking_id")
         booking = get_object_or_404(Booking, id=booking_id)
         booking.payment_status = True
         booking.save()
         return render(request, "payment_success.html", {"message": "Payment completed successfully!"})
     return redirect("user_dashboard")
+
+
+def apply_ration_card(request):
+    if request.method == "POST":
+        master_of_the_house = request.POST.get("master_of_the_house")
+        address = request.POST.get("address")
+        phone_number = request.POST.get("phone_number")
+        punchayath_or_corporation = request.POST.get("punchayath_or_corporation")
+        ward_number = request.POST.get("ward_number")
+        house_number = request.POST.get("house_number")
+        monthly_income = request.POST.get("monthly_income")
+        total_family_members = request.POST.get("total_family_members")
+        family_details = request.POST.get("family_details")
+        date = request.POST.get("date")
+
+        application = RationCardApplications.objects.create(
+            master_of_the_house=master_of_the_house,
+            address=address,
+            phone_number=phone_number,
+            punchayath_or_corporation=punchayath_or_corporation,
+            ward_number=ward_number,
+            house_number=house_number,
+            monthly_income=monthly_income,
+            total_family_members=total_family_members,
+            family_details=family_details,
+            date=date,
+        )
+
+        for file in request.FILES.getlist("id_proofs"):
+            IDProofs.objects.create(application=application, file=file)
+        return render(request, "success_message_rationcard.html")
+    return render(request, "apply_ration_card.html")
 
 

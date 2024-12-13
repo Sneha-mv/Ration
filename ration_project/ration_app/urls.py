@@ -19,6 +19,9 @@ urlpatterns = [
     path('approve/<int:owner_id>/', views.approve_owner, name='approve_owner'),
     path('reject/<int:owner_id>/', views.reject_owner, name='reject_owner'),
     path('payments-list/', views.payment_list, name='payment_list'),
+    path('ration-cards/', views.view_ration_cards, name='view_ration_cards'),
+    path('ration-card/<int:id>/', views.manage_ration_card, name='manage_ration_card'),
+    path('ration-card/delete/<int:id>/', views.delete_ration_card, name='delete_ration_card'),
 
     # Shop Owner Section
     path('shop_dashboard/', views.shop_dashboard, name='shop_dashboard'),
@@ -35,7 +38,7 @@ urlpatterns = [
     path('booking-details/', views.booking_details, name='booking_details'),
     path('payment-details/',views.payment_details,name='payment_details'),
     path('payment-success/',views.payment_success,name='payment_success'),
-   
+    path('apply-ration-card/', views.apply_ration_card, name='apply_ration_card'),
 ]
 
 

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Ration Card Application</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 30px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #4A4A4A;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin: 0 auto;
+            max-width: 600px;
+        }
+
+        .card p {
+            font-size: 18px;
+            color: #555;
+        }
+
+        .card strong {
+            color: #007bff;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .approve-btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+        }
+
+        .approve-btn:hover {
+            background-color: #218838;
+        }
+
+        .reject-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+        }
+
+        .reject-btn:hover {
+            background-color: #c82333;
+        }
+
+        .back-btn {
+            margin-top: 30px;
+            display: block;
+            text-align: center;
+            color: #007bff;
+            text-decoration: none;
+            font-size: 18px;
+        }
+
+        .back-btn:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Manage Ration Card Application for {{ application.master_of_the_house }}</h1>
+
+    <div class="card">
+        <p><strong>Address:</strong> {{ application.address }}</p>
+        <p><strong>Phone Number:</strong> {{ application.phone_number }}</p>
+        <p><strong>Status:</strong> {{ application.status }}</p>
+
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" name="action" value="approve" class="btn approve-btn">Approve</button>
+            <button type="submit" name="action" value="reject" class="btn reject-btn">Reject</button>
+        </form>
+    </div>
+
+    <a href="{% url 'view_ration_cards' %}" class="back-btn">Back to Applications</a>
+
+</body>
+</html>
+
+

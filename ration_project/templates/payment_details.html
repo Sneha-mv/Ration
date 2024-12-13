@@ -21,7 +21,7 @@
                 {{ product.name }} (₹{{ product.price }})<br>
             {% endfor %}</b></h5>
             <h5 class="card-title">Minimum Service Charge: <b>Rs. 100/-</b></h5>
-            <h5 class="card-title">Total Amount: <b>Rs. {{ total_amount }}</b></h5>
+            <h5 class="card-title">Total Amount: <b>Rs. {{ total_amount }}/-</b></h5>
         </div>
         {% endfor %}
         <script src="https://checkout.razorpay.com/v1/checkout.js" data-key="rzp_test_JAeLcxoJpwFjEq"
@@ -47,19 +47,20 @@
         margin-top: 10px;
 }
  
-
-.pay-sec1 {
+    .pay-sec1 {
     padding-top: 50px;
     padding-left: 130px;
     text-align: left;
 }
-.pay-message {
+
+    .pay-message {
     font-size: 25px;
     font-family: 'Times New Roman', Times, serif;
     text-transform: uppercase;
     font-weight: bold;
 }
-.dashboard-btn {
+
+    .dashboard-btn {
             background-color: #322160;
             color: white;
             padding: 10px 20px;
@@ -71,6 +72,7 @@
             width: 200px;
             margin-left: 220px;
         }
+        
 </style>
 </div>
 {% endblock %}
