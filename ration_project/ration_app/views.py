@@ -65,6 +65,10 @@ def logout_view(request):
     return redirect('index')
 
 
+def contact(request):
+    return render(request,'contact.html')
+
+
 # Admin Section
 @login_required
 def admin_dashboard(request):
